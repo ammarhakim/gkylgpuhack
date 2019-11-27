@@ -19,7 +19,7 @@ here.
 - Blog post on implementing [finite-difference codes on
   GPUs](https://devblogs.nvidia.com/finite-difference-methods-cuda-cc-part-1/)
 
-# With Adroit GPU node
+# Working with Adroit GPU node
 
 Everyone with a valid PU email ID should have access to Adroit. You
 need to enable Duo Authenticate to access Adroit, though, and need to

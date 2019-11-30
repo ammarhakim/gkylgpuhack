@@ -9,26 +9,27 @@
 //
 // ............................................................. //
 
+#include "weakDivSolvers.h"
 #include <Eigen/Dense>
 
 using namespace Eigen;
 
-int *solveLinearSystemsEIGEN(const double *lhsA,const int probSize, double *rhsB,double *x,const int xDim,const int nProbs) {
+int solveLinearSystemsEIGEN(double *lhsA, int probSize, double *rhsB, double *x, int xDim, int nProbs) {
   // Solve nProbs linear systems A.x=B of size probSize,
   // where x and B have xDim components.
 
-  int *solveStatus;
+  int solveStatus;
 
   Eigen::MatrixXd A_EM;
   Eigen::VectorXd B_EV;
-  Eigen::VectorXd u_EV;
+  Eigen::VectorXd x_EV;
 
   // Left side Eigen matrix.
   A_EM = Eigen::MatrixXd::Zero(probSize,probSize);
   // Right side Eigen Vector.
   B_EV = Eigen::VectorXd::Zero(probSize);
   // Eigen vector containing the solution.
-  u_EV = Eigen::VectorXd::Zero(probSize);
+  x_EV = Eigen::VectorXd::Zero(probSize);
 
   // Loop over cells.
   for (int i=0; i<nProbs; i++) {
@@ -51,11 +52,11 @@ int *solveLinearSystemsEIGEN(const double *lhsA,const int probSize, double *rhsB
     B_EV << rhsB[k+0],rhsB[k+1],rhsB[k+2];
 
     // Solve the system of equations.
-    u_EV = A_EM.colPivHouseholderQr().solve(B_EV);
+    x_EV = A_EM.colPivHouseholderQr().solve(B_EV);
 
 
     // Extract solution from Eigen vector and place it in c++ array.
-    Eigen::Map<VectorXd>(x+k,probSize,1) = u_EV;
+    Eigen::Map<VectorXd>(x+k,probSize,1) = x_EV;
 
   };
 

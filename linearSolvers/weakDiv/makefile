@@ -26,7 +26,8 @@ clean: $(PROGNAME).x
 	rm -f $(addsuffix .mod, $(mods))
 
 $(PROGNAME).x: $(PROGNAME).$(PROGEXT)
-	$(COMPILER) $(INCS) $(LIBS) $(FLAGS) $(PROGNAME).$(PROGEXT) -o $(PROGNAME).x 
+	$(COMPILER) $(INCS) $(LIBS) $(FLAGS) weakDiv_Eigen.cpp weakDiv_CUDA.cu $(PROGNAME).$(PROGEXT) -o $(PROGNAME).x 
+#	$(COMPILER) $(INCS) $(LIBS) $(FLAGS) weakDiv_CUDA.cu $(PROGNAME).$(PROGEXT) -o $(PROGNAME).x 
 
 $(PROGNAME):
 	echo 'Error: You need the .x extension'

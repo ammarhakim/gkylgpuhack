@@ -1,0 +1,54 @@
+#!/bin/bash -l
+
+#.Declare a name for this job. It is recommended
+#.that this name be kept to 16 characters or less.
+#SBATCH -J gkyl
+
+#.Request the queue.
+#SBATCH -p all
+
+#.Number of nodes to request (Adroit CPUD nodes have 32 cores per node).
+#SBATCH -N 1
+
+#.Total number of cores (32 per node).
+#SBATCH -n 32
+
+#.Use the following to request a Tesla V100 GPU node.
+# aSBATCH --gres=gpu:tesla_v100:1
+
+#.Request wall time
+#SBATCH -t 01:00:00
+
+#.Mail is sent to you when the job starts and when it terminates or aborts.
+#SBATCH --mail-user=mfrancis@pppl.gov
+#SBATCH --mail-type=END,FAIL,REQUEUE
+
+#.Specify name format of output file.
+#SBATCH -o slurm-%j.out
+
+#.Load modules needed by the program.
+module load intel
+module load intel-mpi
+module load cudatoolkit/10.1
+
+export SCRATCH="/scratch/network/francisquez/"
+#.For some reason we need to specify the full path to gkyl command in jobscript.
+export gComDir="$HOME/gkylsoft/gkyl/bin/"
+#.Specify location of mpirun in Openmpi installed by gkyl.
+export mpiComDir="$I_MPI_ROOT/bin64/"
+
+#.Create record-keeping directory (not purged).
+export recdir="$HOME/gkeyll/data/$SLURM_JOBID/"
+mkdir -p $recdir
+#.Copy files used for this run into record directory.
+cp ./rt-weibel-2x2v-p2.lua $recdir
+cp ./jobScript_gkyl-engaging $recdir
+
+#.On NERSC's Cori, use the following aprun launch line.
+echo $mpiComDir'/mpirun -n 32 '$gComDir'/gkyl rt-weibel-2x2v-p2.lua'
+$mpiComDir/mpirun -n 32 $gComDir/gkyl rt-weibel-2x2v-p2.lua
+
+cp ./rt-weibel-2x2v-p2_0.log $recdir
+cp ./slurm-$SLURM_JOBID.out $recdir
+
+exit 0

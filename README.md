@@ -6,7 +6,7 @@ here.
 
 # Folder contents
 
-- clusterInfo: Information for using gpus on clusters (e.g. Portal, Adroit).
+- clusterInfo: Information for using gpus on clusters (e.g. Portal, Adroit, Traverse).
 
 - gentran: Notes and patch to use the code-generating library GENTRAN.
 

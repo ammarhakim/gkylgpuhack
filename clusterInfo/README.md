@@ -57,3 +57,73 @@ file. However, you can also load it manually using:
 
 This will add the nvcc compiler into the path and also define a bunch
 of env variables with location of the libraries.
+
+# Working with Portal GPU node
+
+Everyone that can VPN into PPPL should have access to the Portal cluster at PPPL.
+You can log in to portal with the command:
+
+```
+  ssh ppplusername@portal.pppl.gov
+```
+
+Once logged in to Portal, you will need to modify whichever profile file is sourced
+to set up your modules (see which file is sourced in ~/.login). For example, modify
+~/.cshrc to load:
+
+```
+  module load gcc/7.3.0
+  module load openmpi
+  module load cuda
+  module load git
+```
+
+Also ensure that /sbin/ in in your PATH. This is needed to get
+ldconfig which is needed by luajit to properly create its shared
+libraries.
+
+This modification is necessary as the module load command does not work inside a shell script,
+such as those we use to build the dependencies and configure the system. Note that the module load
+commands are included anyway in the mkdeps.portal.sh and configure.portal.sh files as a reference.
+
+Although Portal contains the Intel compiler, gcc 7.3 and cuda 10.1 are a consistent build on Portal 
+(DO NOT USE gcc 9.1), and preferable for ease-of-build. Likewise it is recommended that you load git
+if doing any development work as the git in /usr/bin/ is too old to make commits, whereas the module git
+is newer.
+
+After setting up your modules run the mkdeps file in the machines directory:
+
+```
+ ./machines/mkdeps.portal.sh
+```
+
+
+```
+  ./machines/configure.portal.sh
+```
+
+and finish the installation of Gkyl. To access the Nvidia Volta node, ssh directly onto the node,
+
+```
+  ssh gpusrv02
+```
+
+and to check that the installation has been successful, run the test_Cuda.lua unit test,
+
+```
+  ~/gkylsoft/gkyl/bin/gkyl ~/gkyl/Unit/test_Cuda.lua
+```
+
+## If luajit fails to link due to -fPIC flag
+
+Often, the compiler will complain that libluajit.a can't be used to
+build shared library. This is due to missing ldconfig. If you see
+this, then we need to manually link the shared libraries for Lua. We
+can do this by,
+
+```
+ cd ~/gkylsoft/luajit/lib
+ ln -sf libluajit-5.1.so.2.1.0 libluajit-5.1.so && ln -sf libluajit-5.1.so.2.1.0 libluajit-5.1.so.2
+```
+
+

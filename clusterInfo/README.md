@@ -78,6 +78,10 @@ to set up your modules (see which file is sourced in ~/.login). For example, mod
   module load git
 ```
 
+Also ensure that /sbin/ in in your PATH. This is needed to get
+ldconfig which is needed by luajit to properly create its shared
+libraries.
+
 This modification is necessary as the module load command does not work inside a shell script,
 such as those we use to build the dependencies and configure the system. Note that the module load
 commands are included anyway in the mkdeps.portal.sh and configure.portal.sh files as a reference.
@@ -93,15 +97,6 @@ After setting up your modules run the mkdeps file in the machines directory:
  ./machines/mkdeps.portal.sh
 ```
 
-Before configuring, because Portal appears to be missing the ldconfig function, we need to manually link the
-shared libraries for Lua. We can do this by,
-
-```
- cd ~/gkylsoft/luajit/lib
- ln -sf libluajit-5.1.so.2.1.0 ~/gkylsoft/luajit-2.1.0-beta3-openresty/lib/libluajit-5.1.so && ln -sf libluajit-5.1.so.2.1.0 ~/gkylsoft/luajit-2.1.0-beta3-openresty/lib/libluajit-5.1.so.2
-```
-
-Now move back to the gkyl directory and configure the system on Portal,
 
 ```
   ./machines/configure.portal.sh
@@ -118,3 +113,17 @@ and to check that the installation has been successful, run the test_Cuda.lua un
 ```
   ~/gkylsoft/gkyl/bin/gkyl ~/gkyl/Unit/test_Cuda.lua
 ```
+
+## If luajit fails to link due to -fPIC flag
+
+Often, the compiler will complain that libluajit.a can't be used to
+build shared library. This is due to missing ldconfig. If you see
+this, then we need to manually link the shared libraries for Lua. We
+can do this by,
+
+```
+ cd ~/gkylsoft/luajit/lib
+ ln -sf libluajit-5.1.so.2.1.0 libluajit-5.1.so && ln -sf libluajit-5.1.so.2.1.0 libluajit-5.1.so.2
+```
+
+

@@ -15,4 +15,6 @@ Maxima 5.43.0 the exact location of this directory is:
 ```
 
 Michael also sent me his version of the Gentran user manual. I
-converted it to an markdown file and it is checked in here.
+converted it to an markdown file and it is checked in here. I strongly
+recommend everyone updates Maxima to the latest 5.43.0 version before
+the hackathon.

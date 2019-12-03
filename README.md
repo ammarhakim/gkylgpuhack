@@ -29,3 +29,7 @@ here.
 - Blog post on implementing [finite-difference codes on
   GPUs](https://devblogs.nvidia.com/finite-difference-methods-cuda-cc-part-1/)
 
+- [Grid--stride](https://devblogs.nvidia.com/cuda-pro-tip-write-flexible-kernels-grid-stride-loops/)
+  loops are important for maintaining coalesced memory accesses
+  that GPUs like for better performance.
+

@@ -25,7 +25,7 @@ reductions.
   [CUDA samples repo](https://github.com/NVIDIA/cuda-samples/tree/master/Samples/reduction).
 
 - In understanding some of the above examples (and optimizing
-  other codes), one may find it useful to learn about [warp--level primitives](Warp-Level Primitives),
+  other codes), one may find it useful to learn about [warp-level primitives](https://devblogs.nvidia.com/using-cuda-warp-level-primitives/),
   [grid stride loops](https://devblogs.nvidia.com/cuda-pro-tip-write-flexible-kernels-grid-stride-loops/) and
   [cooperative groups](https://devblogs.nvidia.com/cooperative-groups/).
 

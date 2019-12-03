@@ -12,6 +12,8 @@ here.
 
 - linearSolvers: Useful resources for solving linear problems on GPUs.
 
+- reductions: Examples and info on performing reductions on GPUs.
+
 # Links to useful GPU tutorials and papers
 
 - See Princeton University [GPU Intro

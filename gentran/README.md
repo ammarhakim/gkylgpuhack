@@ -38,4 +38,4 @@ The first command will open the file and delete its contents. This is
 needed as ```gentranin``` appeands to the open file everytime it is
 called and does not overwrite its contents.
 
-
+An old (probably out of date) gentran manual can be found in this folder.

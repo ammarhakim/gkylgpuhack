@@ -30,7 +30,12 @@ template ```fpo.template``` is stored in the directory ```fpo```. Then
 to run the template do:
 
 ```
+close(openw("~/max-out/fpo.cpp"))$
 gentranin("fpo/fpo.template", ["~/max-out/fpo.cpp"])$
 ```
+
+The first command will open the file and delete its contents. This is
+needed as ```gentranin``` appeands to the open file everytime it is
+called and does not overwrite its contents.
 
 

@@ -1,0 +1,70 @@
+/* -*- c -*- */
+
+#include <iostream>
+
+<<
+   gentranlang:c$
+   genfloat:true$
+
+   load("modal-basis")$
+   cdim : 1$
+   vdim : 1$
+   basisType : "Ser"$
+   load("basis-precalc/basisSer1x1v")$
+
+   sList : [x^2=x2, x^3=x3, x^4=x4]$
+>>
+
+void myFunction(double a, double b, unsigned phaseGridIdx)
+{
+// Index of the first phase-space memory address to access.
+<<
+  bP : basisP[1]$
+  NP : length(bP)$
+  gentran( literal("unsigned int phaseFldIdx;", cr) )$
+  gentran( rsetq(phaseFldIdx, phaseGridIdx*NP) )$
+>>
+}
+
+double evalBasis_p1(double x, double *f)
+{
+  double fval;
+<<
+  fl : float(doExpand1(f, basisC[1]))$
+  gentran(type("double", fval), rsetq(fval, fl) )$    
+>>
+  return fval;
+}
+
+double evalBasis_p2(double x, double *f)
+{
+  double fval, x2 = x*x;
+<<
+  fl : float(subst(sList, expand(doExpand1(f, basisC[2]))))$
+  gentran( rsetq(fval, fl) )$    
+>>  
+  return fval;
+}
+
+double evalBasis_p3(double x, double *f)
+{
+  double fval, x2 = x*x;
+  double x3 = x2*x;
+<<
+  fl : float(subst(sList, expand(doExpand1(f, basisC[3]))))$
+  gentran( rsetq(fval, fl) )$    
+>>  
+  return fval;
+}
+
+double evalBasis_p4(double x, double *f)
+{
+  double fval, x2 = x*x;
+  double x3 = x2*x;
+  double x4 = x3*x;
+<<
+  fl : float(subst(sList, expand(doExpand1(f, basisC[4]))))$
+  gentran( rsetq(fval, fl) )$    
+>>  
+  return fval;
+}

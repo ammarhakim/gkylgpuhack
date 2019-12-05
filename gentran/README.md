@@ -26,7 +26,7 @@ the hackathon.
 Template files can live anywhere in the Maxima load path. As most of
 us have cas-scripts in the path, this means we can store the templates
 in the sub-directories of cas-scripts and use them. For example, say a
-template ```fpo.template``` is stored in the directory ```fpo``. Then
+template ```fpo.template``` is stored in the directory ```fpo```. Then
 to run the template do:
 
 ```

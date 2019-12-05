@@ -40,59 +40,89 @@ void printSolution(const double *x, const int nX, const int xDim, const int nCoe
   };
 }
 
-__inline__ __device__ double warpReduceSum(double val) {
+__inline__ __device__ void warpReduceComponentsSum(double *vals, int nComps) {
+  // Perform 'nComps' independent (sum) reductions across a warp,
+  // one for each component in 'vals'.
+
   // MF: I think this assumes warpSize is a power of 2.
-  for (int offset = warpSize/2; offset > 0; offset /= 2) 
-    val += __shfl_down_sync(0xffffffff, val, offset, warpSize);
-  return val;
+  for (unsigned int k = 0; k < nComps; k++) {
+    for (int offset = warpSize/2; offset > 0; offset /= 2) {
+      vals[0+k] += __shfl_down_sync(0xffffffff, vals[0+k], offset, warpSize);
+    }
+  }
 }
 
-__inline__ __device__ double blockReduceSum(double val) {
+__inline__ __device__ void blockReduceComponentsSum(double *vals, int nComps) {
+  // Perform 'nComps' independent (sum) reductions across a block,
+  // one for each component in 'nComps'.
 
-  static __shared__ double warpSum[warpSize]; // Stores partial sums.
+  extern __shared__ double blockSum[]; // Stores partial sums.
   int lane   = threadIdx.x % warpSize;
   int warpID = threadIdx.x / warpSize;
 
-  val = warpReduceSum(val);            // Each warp performs partial reduction.
+  warpReduceComponentsSum(vals, nComps);            // Each warp performs partial reduction.
 
-  if (lane==0) warpSum[warpID] = val;  // Write reduced value to shared memory.
+  if (lane==0) {
+    // Write reduced value to shared memory.
+    for (unsigned int k = 0; k < nComps; k++) {
+      blockSum[warpID*nComps+k] = vals[k];
+    }
+  }
 
   __syncthreads();                     // Wait for all partial reductions.
 
   // Read from shared memory (only for by the first warp).
-  val = (threadIdx.x < blockDim.x / warpSize) ? warpSum[lane] : 0;
+  for (unsigned int k = 0; k < nComps; k++) {
+    vals[k] = (threadIdx.x < blockDim.x / warpSize) ? blockSum[lane*nComps+k] : 0;
+  }
 
-  if (warpID==0) val = warpReduceSum(val); // Final reduce within first warp.
+  if (warpID==0) warpReduceComponentsSum(vals, nComps); // Final reduce within first warp.
 
-  return val;
 }
 
-__global__ void calcMom0Ser1x1vP1(int *nCells, double *w, double *dxv, double *fIn, double *out) {
+__host__ __device__ void MomentCalc1x1vSer_M0_P1(const double *w, const double *dxv, const double *f, double *out)
+{
+  const double volFact = dxv[1]/2;
+  out[0] += 1.414213562373095*f[0]*volFact;
+  out[1] += 1.414213562373095*f[1]*volFact;
+}
+
+__global__ void calcMom1x1vSer_M0_P1(int *nCells, double *w, double *dxv, double *fIn, double *out) {
   // Calculate the zeroth moment of the distribution function. We will first assign
   // whole configuration-space cells to a single block. Then one must perform a reduction
   // across a block for each conf-space basis coefficient.
-  unsigned int blockSize    = blockDim.x;
-  // Configuration and velocity space index.
-  unsigned int confIdx      = blockIdx.x;
-  unsigned int velIdx       = threadIdx.x;
   // Index of the current phase-space cell.
-  unsigned int phaseGridIdx = confIdx*blockSize + velIdx;
+  unsigned int phaseGridIdx = blockIdx.x*blockDim.x + threadIdx.x;
+
+  const unsigned int pDim = 2;    // Phase space dimension;
+  const unsigned int nP   = 4;    // Number of phase-space basis functions.
+  const unsigned int nC   = 2;    // Number of configuration-space basis functions.
+
+  // Configuration and velocity space indexes.
+  unsigned int confIdx = phaseGridIdx/nCells[1];
+  unsigned int velIdx  = phaseGridIdx-confIdx*nCells[1];
+
   // Index of the first phase-space memory address to access.
-  unsigned int phaseFldIdx  = phaseGridIdx*4;  // This *4 is for polyOrder=1.
+  unsigned int phaseFldIdx = phaseGridIdx*nP;
 
-  double mySum[2];
-  const double volFact = dxv[phaseGridIdx*2+1]/2;
-  mySum[0] = 1.414213562373095*volFact*fIn[phaseFldIdx];
-  mySum[1] = 1.414213562373095*volFact*fIn[phaseFldIdx+1];
+  double localSum[nC];
+  for (unsigned int k = 0; k < nC; k++) {
+    localSum[k] = 0.0;  // Need to zero this out because kernel below increments.
+  }
 
-  double blockSum;
-  blockSum = blockReduceSum(mySum[0]);
-  if (threadIdx.x==0)
-      out[confIdx*2] = blockSum;
-  blockSum = blockReduceSum(mySum[1]);
-  if (threadIdx.x==0)
-      out[confIdx*2+1] = blockSum;
+  // Pointers to quantities expected by the moment kernel.
+  double *distF       = &fIn[phaseFldIdx];
+  double *cellCenter  = &w[0];
+  double *cellSize    = &dxv[0];
+  double *localSumPtr = &localSum[0];
 
+  MomentCalc1x1vSer_M0_P1(cellCenter, cellSize, distF, localSumPtr);
+
+  blockReduceComponentsSum(localSumPtr, nC);
+  if (threadIdx.x==0) {
+    out[confIdx*nC]   = localSumPtr[0];
+    out[confIdx*nC+1] = localSumPtr[1];
+  }
 }
 
 int main()
@@ -100,32 +130,27 @@ int main()
 
   const int nPhaseBasisComps = 4;             // Number of monomials in phase-space basis.
   const int nConfBasisComps  = 2;             // Number of monomials in configuration-space basis.
-  const int nCells[2]        = {1024, 128};   // Number of cells in x and v.
+  const int nCells[2]        = { 512*512, 128 };   // Number of cells in x and v.
 
   // In choosing the following two also bear in mind that on Nvidia V100s (80 SMs):
   //   Max Warps / SM         = 64
   //   Max Threads / SM       = 2048
   //   Max Thread Blocks / SM = 32 
-  const int nBlocks  = 1024;          // Number of device blocks. Max=2560 on V100s. 
+  const int nBlocks  = 512*512;          // Number of device blocks. Max=2560 on V100s. 
   const int nThreads = 128;           // Number of device threads per block. Max=1024.
 
-  const int totCells = nCells[0]*nCells[1];               // Total number of cells.
-  const int pDim     = sizeof(nCells)/sizeof(nCells[0]);  // Phase space dimensions.
-  const int confCells[1] = {nCells[0]};
+  const int totCells     = nCells[0]*nCells[1];               // Total number of cells.
+  const int pDim         = sizeof(nCells)/sizeof(nCells[0]);  // Phase space dimensions.
+  const int confCells[1] = { nCells[0] };
 
   // Allocate the grid's cell center and length. Give some dummy values here.
   double *cellSize, *cellCenter;
-  cellSize   = (double*) calloc (totCells*pDim, sizeof(double));
-  cellCenter = (double*) calloc (totCells*pDim, sizeof(double));
-  for (int idx=0; idx<totCells; idx++) {
-
-    const unsigned int k = idx*pDim;
-
-    cellSize[k]     = 1.0;
-    cellSize[k+1]   = 1.0;
-    cellCenter[k]   = 1.0;
-    cellCenter[k+1] = 1.0;
-  };
+  cellSize   = (double*) calloc (pDim, sizeof(double));
+  cellCenter = (double*) calloc (pDim, sizeof(double));
+  cellSize[0]   = 1.0;
+  cellSize[1]   = 0.10;
+  cellCenter[0] = 1.0;
+  cellCenter[1] = 1.0;
 
   // Distribution function and zeroth moment.
   double *distF, *mom0;
@@ -140,14 +165,14 @@ int main()
   //   idx = (i*nCells[1]+j)*nPhaseBasisComps+k
   //   i = (idx+1)/(nCells[1]*nPhaseBasisComps)
   //   j = (idx-i*(nCells[1]*nPhaseBasisComps)+1)/nPhaseBasisComps
-  //   k = idx-i*(nCells[1]*nPhaseBasisComps)-k*nPhaseBasisComps
+  //   k = idx-i*(nCells[1]*nPhaseBasisComps)-j*nPhaseBasisComps
   // Note: for a flattened 2D array one would have the following mapping:  
   //   idx = i*nCells[1]+j
   //   i = ((idx+1)/nCells[1])
   //   j = idx-i*nCells[1]
-  for (unsigned int idx=0; idx<totCells; idx++) {
+  for (int idx=0; idx<totCells; idx++) {
 
-    const unsigned int k = idx*nPhaseBasisComps;
+    int k = idx*nPhaseBasisComps;
 
     distF[k]   = 3.14159;
     distF[k+1] = 0.20;
@@ -159,18 +184,18 @@ int main()
   int *d_nCells;
   double *d_cellSize, *d_cellCenter;
   cudacall(cudaMalloc(&d_nCells, pDim*sizeof(int)));
-  cudacall(cudaMalloc(&d_cellSize, pDim*totCells*sizeof(double)));
-  cudacall(cudaMalloc(&d_cellCenter, pDim*totCells*sizeof(double)));
+  cudacall(cudaMalloc(&d_cellSize, pDim*sizeof(double)));
+  cudacall(cudaMalloc(&d_cellCenter, pDim*sizeof(double)));
   cudacall(cudaMemcpy(d_nCells, nCells, pDim*sizeof(int), cudaMemcpyHostToDevice));
-  cudacall(cudaMemcpy(d_cellSize, cellSize, pDim*totCells*sizeof(double), cudaMemcpyHostToDevice));
-  cudacall(cudaMemcpy(d_cellCenter, cellCenter, pDim*totCells*sizeof(double), cudaMemcpyHostToDevice));
+  cudacall(cudaMemcpy(d_cellSize, cellSize, pDim*sizeof(double), cudaMemcpyHostToDevice));
+  cudacall(cudaMemcpy(d_cellCenter, cellCenter, pDim*sizeof(double), cudaMemcpyHostToDevice));
   double *d_distF, *d_mom0;
   cudacall(cudaMalloc(&d_distF, totCells*nPhaseBasisComps*sizeof(double)));
   cudacall(cudaMalloc(&d_mom0, confCells[0]*nConfBasisComps*sizeof(double)));
   cudacall(cudaMemcpy(d_distF, distF, totCells*nPhaseBasisComps*sizeof(double), cudaMemcpyHostToDevice));
 
   // Launch kernel.
-  calcMom0Ser1x1vP1<<<nBlocks, nThreads>>>(d_nCells, d_cellCenter, d_cellSize, d_distF, d_mom0);
+  calcMom1x1vSer_M0_P1<<<nBlocks, nThreads, nConfBasisComps*(nThreads/warpSize)*sizeof(double)>>>(d_nCells, d_cellCenter, d_cellSize, d_distF, d_mom0);
 
   // Copy result to host.
   cudacall(cudaMemcpy(mom0, d_mom0, confCells[0]*nConfBasisComps*sizeof(double), cudaMemcpyDeviceToHost));

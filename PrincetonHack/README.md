@@ -1,6 +1,12 @@
 # Notes for use in the Princeton GPU Hackathon, June 2020
 
-Please add notes to this file/directory for things specific to the Princeton PU Hackathon to be held in June 2020.
+Please add notes to this file/directory for things specific to the Princeton PU Hackathon to be held in June 2020. Important first steps:
+
+- Please __register__ at this website: [Registration](https://docs.google.com/forms/d/e/1FAIpQLSfenTYRopA83xixsLQ2g3kJztokgB9GH-3dtSRM-nDAeJH0kQ/viewform). 
+
+- You can get access to Accent training system. See information at [Accent](https://bit.ly/ptown_gpuhack2020_ascent).
+
+- We will also likely use our own Portal resources for the hackathon. Those who have PPPL IDs, please make sure you have access to Portal and can build the code on Portal. Machine files are checked in also. __Petr__ I can get you access to Portal also.
 
 # Division of labor
 

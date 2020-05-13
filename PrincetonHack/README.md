@@ -32,13 +32,7 @@ Please add notes to this file/directory for things specific to the Princeton PU 
 
 - Test everything and make sure it works on all platforms of interest.
 
-For the Lua <-> C++ bridge I am planning to use the sol3 library (see https://github.com/ThePhD/sol2). This is an amazing library. BUT it needs c++17 support. At one point I was using this library in G2 but then we found that the Intel C++ compilers were barfing on some of the code. (ICE messages). However, that was 2 years ago and perhaps everything is fine now. We can test.
-
-From the following it seems that the Nvidia compiler supports zero features of the C++17 standard:
-
-https://en.cppreference.com/w/cpp/compiler_support#cpp17
-
-However, I think that is fine as we only need nvcc to compile the CUDA kernels and the other code can use regular compilers (gcc or Intel). I think. Noah correct me if I am wrong here: can we use regular C++ compiler for most of the code that runs on the CPU and then the nvcc for CUDA kernels and CUDA specific loops only?
+For the Lua <-> C++ bridge I am planning to use the sol3 library (see https://github.com/ThePhD/sol2). This is an amazing library. BUT it needs c++17 support. At one point I was using this library in G2 but then we found that the Intel C++ compilers were barfing on some of the code. (ICE messages). However, that was 2 years ago and perhaps everything is fine now. We can test. We can simply abondon Intel Compilers also.
 
 ## Phase III: GPUs specific work
 

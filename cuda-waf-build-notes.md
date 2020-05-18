@@ -51,4 +51,11 @@ CUDA via the processes above, the `cusources` list will grow.
 once with the C++ compiler (via the standard build scheme), and another time with ``nvcc``.**
 
 ## How the waf system works with CUDA
-...
+
+A new `cutools` module (see `waf_tools/cutools.py`) has been added to the `waf` build system to enable compiling and linking CUDA code. This has rules for how to build various types of files with `nvcc`.
+
+### Compiling C/CUDA code into object files
+If `waf` finds a file with a `*.cu` extension, it will compile it using `nvcc`. However, in Gkeyll we have a lot of existing code that lives in `*.cpp` files that we would like to compile with `nvcc`. This can be enabled using `features=nvcc` in the wscript build command, as shown above. This will compile the files with `nvcc -x cu -c -dc ...`, which creates device object files.
+
+### Linking CUDA-compiled object files into shared libraries
+To use `nvcc` to link the object files that were compiled with `nvcc` into a shared library, we add `cushlib` to the features list in the wscript build command. This will link the object files into a shared library with `nvcc -shared ...`.

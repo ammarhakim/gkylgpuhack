@@ -35,10 +35,13 @@ Add this line to your Slurm script to use a V100 GPUs:
 ```
 
 You can also logon to the GPU node directly:
-
 ```
   ssh adroit-h11g1
 ```  
+and see what the current GPU utilization is (e.g. to see if there's a GPU available) with
+```
+  nvidia-smi
+```
 
 
 To see gory information about the GPU do:

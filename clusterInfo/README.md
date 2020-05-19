@@ -12,7 +12,10 @@ be VPN-ed to the lab's network (or be within the PU or PPPL network).
 ## Useful Adroit/SLURM commands
 
 List the nodes: `snodes`.
+
 List the gpu nodes: `snodes all gpu`.
+
+Check your diskspace availability: `checkquota`.
 
 ## Building Gkeyll on Adroit
 Please build the dependencies for Adroit by running:

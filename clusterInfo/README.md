@@ -9,6 +9,12 @@ Everyone with a valid PU email ID should have access to Adroit. You
 need to enable Duo Authenticate to access Adroit, though, and need to
 be VPN-ed to the lab's network (or be within the PU or PPPL network).
 
+## Useful Adroit/SLURM commands
+
+List the nodes: `snodes`.
+List the gpu nodes: `snodes all gpu`.
+
+## Building Gkeyll on Adroit
 Please build the dependencies for Adroit by running:
 
 ```
@@ -49,14 +55,14 @@ Add this line to your Slurm script to use a V100 GPUs:
 
 ## Interactive jobs
 
-### Runnig CPU code
+### Running CPU code
 If you are only going to run cpu/host code, then you can request an interactive job with
 ```
 salloc -N 1 -n 1 --gres=gpu:tesla_v100:1 -t 00:30:00 --mem=8G
 ```
 where `-N` indicates the number of nodes, `-n` the number of (MPI) tasks, `-t` the duration of the job, and `--mem` the amount of memory you desire. Note that if you are only running CPU code you don't really need to speciy the resource `--gres=gpu:tesla_v100:1`.
 
-### Runing GPU code
+### Running GPU code
 The prefered way to run GPU code interactively is to request a job with
 ```
 salloc -N 1 --gres=gpu:tesla_v100:1 -t 00:30:00 srun -n1 -N1 --mem-per-cpu=0 --pty --preserve-env --mpi=none --gres=gpu:0 /bin/bash

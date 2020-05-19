@@ -28,34 +28,6 @@ NVIDIA V100 GPUs with 32 GB of memory each. See the specs for the
 GPU has 80 streaming multiprocessors (SM) and 64 CUDA cores per SM
 (and 8 Tensor Cores per SM).
 
-Add this line to your Slurm script to use a V100 GPUs:
-
-```
-#SBATCH --gres=gpu:tesla_v100:1
-```
-
-For getting an interactive queue to run tests do:
-
-```
-salloc -N 1 -n 1 --gres=gpu:tesla_v100:1 -t 30:00
-```
-
-You can also logon to the GPU node directly:
-```
-  ssh adroit-h11g1
-```  
-and see what the current GPU utilization is (e.g. to see if there's a GPU available) with
-```
-  nvidia-smi
-```
-
-
-To see gory information about the GPU do:
-
-```
-  nvidia-smi -q
-```
-
 The CUDA dev tools are part of the cudatoolkit/10.1 module. It is
 loaded when you configure Gkeyll using the Adroit machine
 file. However, you can also load it manually using:
@@ -66,6 +38,49 @@ file. However, you can also load it manually using:
 
 This will add the nvcc compiler into the path and also define a bunch
 of env variables with location of the libraries.
+
+## Submitting batch jobs
+
+Add this line to your Slurm script to use a V100 GPUs:
+
+```
+#SBATCH --gres=gpu:tesla_v100:1
+```
+
+## Interactive jobs
+
+### Runnig CPU code
+If you are only going to run cpu/host code, then you can request an interactive job with
+```
+salloc -N 1 -n 1 --gres=gpu:tesla_v100:1 -t 00:30:00 --mem=8G
+```
+where `-N` indicates the number of nodes, `-n` the number of (MPI) tasks, `-t` the duration of the job, and `--mem` the amount of memory you desire. Note that if you are only running CPU code you don't really need to speciy the resource `--gres=gpu:tesla_v100:1`.
+
+### Runing GPU code
+The prefered way to run GPU code interactively is to request a job with
+```
+salloc -N 1 --gres=gpu:tesla_v100:1 -t 00:30:00 srun -n1 -N1 --mem-per-cpu=0 --pty --preserve-env --mpi=none --gres=gpu:0 /bin/bash
+```
+The idea here is that one has to start an interactive job that doesn’t consume the GPU, and once in the interactive session do use the GPU with your run command:
+```
+srun gkyl cudaFile.lua
+```
+You may have to provide the direct path to the `gkyl` command, depending on your local configuration.
+
+In principle you can also logon to the GPU node directly:
+```
+  ssh adroit-h11g1
+```  
+However, one should not ssh onto a node and run code without requesting an interactive job as explained above. 
+
+Sometimes it is useful to ssh into a node to see what the current GPU utilization is (e.g. to see if there's a GPU available) with
+```
+  nvidia-smi
+```
+or o see gory information about the GPU with
+```
+  nvidia-smi -q
+```
 
 # Working with Portal GPU node
 

@@ -34,6 +34,12 @@ Add this line to your Slurm script to use a V100 GPUs:
 #SBATCH --gres=gpu:tesla_v100:1
 ```
 
+For getting an interactive queue to run tests do:
+
+```
+salloc -N 1 -n 1 --gres=gpu:tesla_v100:1 -t 30:00
+```
+
 You can also logon to the GPU node directly:
 ```
   ssh adroit-h11g1

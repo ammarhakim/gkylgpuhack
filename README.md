@@ -34,8 +34,11 @@ here.
   github](https://github.com/PrincetonUniversity/gpu_programming_intro)
   page.
 
-- The most comprehensive documentation is [NVIDIA's C Programing
+- The most comprehensive programming documentation is [NVIDIA's C
+  Programing
   Guide](https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html)
+
+- The complete CUDA toolkit is documented [here](https://docs.nvidia.com/cuda/index.html)
 
 - Paper with gory details on [Volta GPU Architectures via
   Microbenchmarking](https://arxiv.org/pdf/1804.06826.pdf)

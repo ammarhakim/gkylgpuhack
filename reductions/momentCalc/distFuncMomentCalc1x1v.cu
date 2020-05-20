@@ -31,8 +31,7 @@ namespace cg = cooperative_groups;
 
 void printSolution(const double *x, const int nX, const int xDim, const int nCoeffs) {
   // Function to print solution to screen.
-//  for(int i=0; i<nX; i++){ 
-  for(int i=0; i<5; i++){ 
+  for(int i=0; i<nX; i++){ 
     for(int k=0; k<nCoeffs; k++){ 
       printf(" %f ",x[i*nCoeffs+k]);
     };
@@ -130,18 +129,20 @@ int main()
 
   const int nPhaseBasisComps = 4;             // Number of monomials in phase-space basis.
   const int nConfBasisComps  = 2;             // Number of monomials in configuration-space basis.
-  const int nCells[2]        = { 512*512, 128 };   // Number of cells in x and v.
+  const int nCells[2]        = { 8, 32 };   // Number of cells in x and v.
+
+  const int totCells     = nCells[0]*nCells[1];               // Total number of cells.
+  const int pDim         = sizeof(nCells)/sizeof(nCells[0]);  // Phase space dimensions.
+  const int confCells[1] = { nCells[0] };
 
   // In choosing the following two also bear in mind that on Nvidia V100s (80 SMs):
   //   Max Warps / SM         = 64
   //   Max Threads / SM       = 2048
   //   Max Thread Blocks / SM = 32 
-  const int nBlocks  = 512*512;          // Number of device blocks. Max=2560 on V100s. 
-  const int nThreads = 128;           // Number of device threads per block. Max=1024.
-
-  const int totCells     = nCells[0]*nCells[1];               // Total number of cells.
-  const int pDim         = sizeof(nCells)/sizeof(nCells[0]);  // Phase space dimensions.
-  const int confCells[1] = { nCells[0] };
+  const int nBlocks  = nCells[0];          // Number of device blocks. Max=2560 on V100s. 
+  const int nThreads = nCells[1];           // Number of device threads per block. Max=1024.
+//  const int nThreads = 256;           // Number of device threads per block. Max=1024.
+//  const int nBlocks  = totCells/nThreads+1;          // Number of device blocks. Max=2560 on V100s. 
 
   // Allocate the grid's cell center and length. Give some dummy values here.
   double *cellSize, *cellCenter;
@@ -201,7 +202,29 @@ int main()
   cudacall(cudaMemcpy(mom0, d_mom0, confCells[0]*nConfBasisComps*sizeof(double), cudaMemcpyDeviceToHost));
 
   printf("CUDA kernel moment:\n");
-  printSolution(mom0, confCells[0], 1, nConfBasisComps);
+//  printSolution(mom0, confCells[0], 1, nConfBasisComps);
+  printSolution(mom0, 5, 1, nConfBasisComps);
+  // Expected answer
+  double *mom0A  = (double*) calloc (confCells[0]*nConfBasisComps, sizeof(double));
+  for (int idx=0; idx<confCells[0]; idx++) {
+    int k = idx*nConfBasisComps;
+    mom0A[k]   = 0.0;
+    mom0A[k+1] = 0.0;
+  };
+  for (int idx=0; idx<totCells; idx++) {
+
+    unsigned int k       = idx*nPhaseBasisComps;
+    unsigned int confIdx = idx/nCells[1];
+    unsigned int i       = confIdx*nConfBasisComps;
+
+    double *cdistF = &distF[k];
+    double *cmom0A = &mom0A[i];
+
+    MomentCalc1x1vSer_M0_P1(cellCenter, cellSize, cdistF, cmom0A);
+  };
+  printf("Expected values (from CPU):\n");
+//  printSolution(mom0A, confCells[0], 1, nConfBasisComps);
+  printSolution(mom0A, 5, 1, nConfBasisComps);
 
   // Free device memory.
   cudaFree(d_cellCenter); cudaFree(d_cellSize); cudaFree(d_nCells); 

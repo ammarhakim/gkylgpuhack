@@ -10,10 +10,12 @@
 #include <cuda_runtime.h>
 #include <cooperative_groups.h>
 #include <stdio.h>
+#include <algorithm>
 
 namespace cg = cooperative_groups;
 
 #define warpSize 32
+#define GKYL_DEFAULT_NUM_THREADS 256
 
 
 #define cudacall(call)                                                                                                          \
@@ -90,6 +92,7 @@ __global__ void calcMom1x1vSer_M0_P1(int *nCells, double *w, double *dxv, double
   // Calculate the zeroth moment of the distribution function. We will first assign
   // whole configuration-space cells to a single block. Then one must perform a reduction
   // across a block for each conf-space basis coefficient.
+
   // Index of the current phase-space cell.
   unsigned int phaseGridIdx = blockIdx.x*blockDim.x + threadIdx.x;
 
@@ -129,20 +132,22 @@ int main()
 
   const int nPhaseBasisComps = 4;             // Number of monomials in phase-space basis.
   const int nConfBasisComps  = 2;             // Number of monomials in configuration-space basis.
-  const int nCells[2]        = { 8, 32 };   // Number of cells in x and v.
+  const int nCells[2]        = { 6, 64 };   // Number of cells in x and v.
 
   const int totCells     = nCells[0]*nCells[1];               // Total number of cells.
   const int pDim         = sizeof(nCells)/sizeof(nCells[0]);  // Phase space dimensions.
   const int confCells[1] = { nCells[0] };
+  const int velCells[1]  = { nCells[1] };
+  const int totVelCells  = velCells[0];               // Total number of velocity-space cells.
 
   // In choosing the following two also bear in mind that on Nvidia V100s (80 SMs):
   //   Max Warps / SM         = 64
   //   Max Threads / SM       = 2048
   //   Max Thread Blocks / SM = 32 
-  const int nBlocks  = nCells[0];          // Number of device blocks. Max=2560 on V100s. 
-  const int nThreads = nCells[1];           // Number of device threads per block. Max=1024.
-//  const int nThreads = 256;           // Number of device threads per block. Max=1024.
-//  const int nBlocks  = totCells/nThreads+1;          // Number of device blocks. Max=2560 on V100s. 
+//  const int nBlocks  = nCells[0];          // Number of device blocks. Max=2560 on V100s. 
+//  const int nThreads = nCells[1];           // Number of device threads per block. Max=1024.
+  const int nThreads = std::min(GKYL_DEFAULT_NUM_THREADS,totVelCells);           // Number of device threads per block. Max=1024.
+  const int nBlocks  = totCells/nThreads+1;          // Number of device blocks. Max=2560 on V100s. 
 
   // Allocate the grid's cell center and length. Give some dummy values here.
   double *cellSize, *cellCenter;

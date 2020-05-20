@@ -41,7 +41,9 @@ here.
 - The complete CUDA toolkit is documented [here](https://docs.nvidia.com/cuda/index.html)
 
 - Paper with gory details on [Volta GPU Architectures via
-  Microbenchmarking](https://arxiv.org/pdf/1804.06826.pdf)
+  Microbenchmarking](https://arxiv.org/pdf/1804.06826.pdf). Alternatively this [short
+  white paper](https://images.nvidia.com/content/volta-architecture/pdf/volta-architecture-whitepaper.pdf)
+  also has useful details (e.g. number of SMs, blocks, threads, etc).
 
 - Blog post on implementing [finite-difference codes on
   GPUs](https://devblogs.nvidia.com/finite-difference-methods-cuda-cc-part-1/)

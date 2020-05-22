@@ -16,6 +16,7 @@ namespace cg = cooperative_groups;
 
 #define warpSize 32
 #define GKYL_DEFAULT_NUM_THREADS 256
+#define FULL_MASK 0xffffffff
 
 
 #define cudacall(call)                                                                                                          \
@@ -48,7 +49,7 @@ __inline__ __device__ void warpReduceComponentsSum(double *vals, int nComps) {
   // MF: I think this assumes warpSize is a power of 2.
   for (unsigned int k = 0; k < nComps; k++) {
     for (int offset = warpSize/2; offset > 0; offset /= 2) {
-      vals[0+k] += __shfl_down_sync(0xffffffff, vals[0+k], offset, warpSize);
+      vals[0+k] += __shfl_down_sync(FULL_MASK, vals[0+k], offset, warpSize);
     }
   }
 }
@@ -63,21 +64,23 @@ __inline__ __device__ void blockReduceComponentsSum(double *vals, int nComps) {
 
   warpReduceComponentsSum(vals, nComps);            // Each warp performs partial reduction.
 
-  if (lane==0) {
-    // Write reduced value to shared memory.
-    for (unsigned int k = 0; k < nComps; k++) {
-      blockSum[warpID*nComps+k] = vals[k];
+  if (blockDim.x > warpSize) {    // If statement needed in case number of velocity cells<warpSize.
+    if (lane==0) {
+      // Write reduced value to shared memory.
+      for (unsigned int k = 0; k < nComps; k++) {
+        blockSum[warpID*nComps+k] = vals[k];
+      }
     }
+  
+    __syncthreads();                     // Wait for all partial reductions.
+  
+    // Read from shared memory (only for by the first warp).
+    for (unsigned int k = 0; k < nComps; k++) {
+      vals[k] = (threadIdx.x < blockDim.x / warpSize) ? blockSum[lane*nComps+k] : 0;
+    }
+  
+    if (warpID==0) warpReduceComponentsSum(vals, nComps); // Final reduce within first warp.
   }
-
-  __syncthreads();                     // Wait for all partial reductions.
-
-  // Read from shared memory (only for by the first warp).
-  for (unsigned int k = 0; k < nComps; k++) {
-    vals[k] = (threadIdx.x < blockDim.x / warpSize) ? blockSum[lane*nComps+k] : 0;
-  }
-
-  if (warpID==0) warpReduceComponentsSum(vals, nComps); // Final reduce within first warp.
 
 }
 
@@ -132,7 +135,7 @@ int main()
 
   const int nPhaseBasisComps = 4;             // Number of monomials in phase-space basis.
   const int nConfBasisComps  = 2;             // Number of monomials in configuration-space basis.
-  const int nCells[2]        = { 6, 64 };   // Number of cells in x and v.
+  const int nCells[2]        = { 6, 8 };   // Number of cells in x and v.
 
   const int totCells     = nCells[0]*nCells[1];               // Total number of cells.
   const int pDim         = sizeof(nCells)/sizeof(nCells[0]);  // Phase space dimensions.
@@ -144,8 +147,6 @@ int main()
   //   Max Warps / SM         = 64
   //   Max Threads / SM       = 2048
   //   Max Thread Blocks / SM = 32 
-//  const int nBlocks  = nCells[0];          // Number of device blocks. Max=2560 on V100s. 
-//  const int nThreads = nCells[1];           // Number of device threads per block. Max=1024.
   const int nThreads = std::min(GKYL_DEFAULT_NUM_THREADS,totVelCells);           // Number of device threads per block. Max=1024.
   const int nBlocks  = totCells/nThreads+1;          // Number of device blocks. Max=2560 on V100s. 
 

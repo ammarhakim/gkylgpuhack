@@ -107,8 +107,14 @@ to set up your modules (see which file is sourced in ~/.login). For example, mod
 ```
   module load gcc/7.3.0
   module load openmpi
-  module load cuda
   module load git
+```
+
+To get CUDA libraries to be found add the following to your bash profile:
+
+```
+export PATH=/usr/local/cuda-10.2/bin:/usr/local/cuda-10.2/NsightCompute-2019.1:${PATH}
+export LD_LIBRARY_PATH=/usr/local/cuda-10.2/lib64:${LD_LIBRARY_PATH}
 ```
 
 Also ensure that /sbin/ in in your PATH. This is needed to get
@@ -119,7 +125,7 @@ This modification is necessary as the module load command does not work inside a
 such as those we use to build the dependencies and configure the system. Note that the module load
 commands are included anyway in the mkdeps.portal.sh and configure.portal.sh files as a reference.
 
-Although Portal contains the Intel compiler, gcc 7.3 and cuda 10.1 are a consistent build on Portal 
+Although Portal contains the Intel compiler, gcc 7.3 and cuda 10.2 are a consistent build on Portal 
 (DO NOT USE gcc 9.1), and preferable for ease-of-build. Likewise it is recommended that you load git
 if doing any development work as the git in /usr/bin/ is too old to make commits, whereas the module git
 is newer.

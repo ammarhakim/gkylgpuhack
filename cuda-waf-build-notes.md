@@ -44,12 +44,14 @@ can now be called from within a CUDA** `__global__` **kernel.**
 **3.** You must make slight changes to the `wscript` file containing source (.cpp) files to be built by CUDA, so that the build system knows where to find the CUDA header file we added above. For example, in `Updater/wscript`, we might start with
 ```
 bld.shlib(source = sources,
-              includes = '. interpolateCalcData mgPoissonCalcData spitzerNuCalcData primMomentsCalcData binOpCalcData lagrangeFixData momentCalcData confToPhaseData', use='lib EIGEN MPI', target = 'updater', name = 'updater', vum = '1.0')
+              includes = '. interpolateCalcData mgPoissonCalcData spitzerNuCalcData primMomentsCalcData binOpCalcData lagrangeFixData 
+                          momentCalcData confToPhaseData', use='lib EIGEN MPI', target = 'updater', name = 'updater', vum = '1.0')
 ```
 This must be modified in two places. First, you must add `../Cuda` in the `includes` list. Second, you must add `CUTOOLS` in the `use` list. Note that some `wscript` files may not already have a `use` list, so you would need to add the entire `use='CUTOOLS'`. Now, this section of the `Updater/wscript` will look like
 ```
 bld.shlib(source = sources,
-              includes = '. ../Cuda interpolateCalcData mgPoissonCalcData spitzerNuCalcData primMomentsCalcData binOpCalcData lagrangeFixData momentCalcData confToPhaseData', use='lib EIGEN MPI CUTOOLS', target = 'updater', name = 'updater', vum = '1.0')
+              includes = '. ../Cuda interpolateCalcData mgPoissonCalcData spitzerNuCalcData primMomentsCalcData binOpCalcData lagrangeFixData 
+                          momentCalcData confToPhaseData', use='lib EIGEN MPI CUTOOLS', target = 'updater', name = 'updater', vum = '1.0')
 ```
 
 **4.** You must also add a **new** section in the `wscript` file containing source (.cpp) files to be built by CUDA. For example, in `Updater/wscript`, we have

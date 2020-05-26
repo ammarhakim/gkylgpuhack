@@ -16,7 +16,7 @@ To enable existing kernels that reside in .cpp files to be built by CUDA, one mu
 
 **1.** In the header file containing the prototypes for a kernel that needs to be built by CUDA, you must add  
 ```
-#include "GkCudaConfig.h"
+#include "GkylCudaConfig.h"
 ```  
 to the top of the header file. You must also add the preprocessors  
 ```

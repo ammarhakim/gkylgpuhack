@@ -97,38 +97,32 @@ Everyone that can VPN into PPPL should have access to the Portal cluster at PPPL
 You can log in to portal with the command:
 
 ```
-  ssh ppplusername@portal.pppl.gov
+  ssh ppplusername@portalc7.pppl.gov
 ```
+**Note that we are now using the CentOS 7 login node portalc7. This is because the GPU node that
+we want to use (gpusrv02) is running CentOS 7.**
 
 Once logged in to Portal, you will need to modify whichever profile file is sourced
 to set up your modules (see which file is sourced in ~/.login). For example, modify
 ~/.cshrc to load:
 
 ```
-  module load gcc/7.3.0
+  module load gcc
   module load openmpi
+  module swap gcc gcc/8.4.0
+  module load cuda/10.2
   module load git
 ```
-
-To get CUDA libraries to be found add the following to your bash profile:
-
-```
-export PATH=/usr/local/cuda-10.2/bin:/usr/local/cuda-10.2/NsightCompute-2019.1:${PATH}
-export LD_LIBRARY_PATH=/usr/local/cuda-10.2/lib64:${LD_LIBRARY_PATH}
-```
+Note that we need load the gcc(9) module only so that we can load the openmpi module. We then swap to the gcc/8.4.0 module.
+**Do not use the default gcc module, as it gives gcc/9.3.0, which is incompatible with the CUDA runtime.**
 
 Also ensure that /sbin/ in in your PATH. This is needed to get
 ldconfig which is needed by luajit to properly create its shared
 libraries.
 
-This modification is necessary as the module load command does not work inside a shell script,
-such as those we use to build the dependencies and configure the system. Note that the module load
-commands are included anyway in the mkdeps.portal.sh and configure.portal.sh files as a reference.
-
-Although Portal contains the Intel compiler, gcc 7.3 and cuda 10.2 are a consistent build on Portal 
-(DO NOT USE gcc 9.1), and preferable for ease-of-build. Likewise it is recommended that you load git
-if doing any development work as the git in /usr/bin/ is too old to make commits, whereas the module git
-is newer.
+Even though we load these modules in the mkdeps and configure shell scripts, we still need to
+modify the profile file to load the modules, since calling module load from within a shell
+script cannot change the environment outside of the shell script.
 
 After setting up your modules run the mkdeps file in the machines directory:
 
@@ -136,12 +130,19 @@ After setting up your modules run the mkdeps file in the machines directory:
  ./machines/mkdeps.portal.sh
 ```
 
+and then the configure file:
 
 ```
   ./machines/configure.portal.sh
 ```
 
-and finish the installation of Gkyl. To access the Nvidia Volta node, ssh directly onto the node,
+Then build with the usual
+
+```
+./waf build install
+```
+
+to finish the installation of Gkyl. To access the Nvidia Volta node, ssh directly onto the node,
 
 ```
   ssh gpusrv02

@@ -20,6 +20,11 @@ working examples.
 
 - The Eigen library is a popular linear algebra package. It is possible to
   combine CUDA and Eigen, [see here](https://eigen.tuxfamily.org/dox/TopicCUDA.html).
+  
+- A google search for "gpu finite element assembly" could perhaps give a good starting point for how to design kernels for FEM assembly on GPU. Here are a few search results that look interesting:
+
+   - https://mc.stanford.edu/cgi-bin/images/e/e1/Darve_FEM_GPU_2009.pdf
+   - http://on-demand.gputechconf.com/gtc/2015/presentation/S5403-Nelson-Inoue%20.pdf
 
 
 

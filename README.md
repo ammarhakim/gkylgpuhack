@@ -47,5 +47,7 @@ here.
 
 - Blog post on implementing [finite-difference codes on
   GPUs](https://devblogs.nvidia.com/finite-difference-methods-cuda-cc-part-1/)
+  
+- It currently seems that maximizing register usage (at the expense of occupancy) is optimal for our kernels. Here is a talk (https://www.nvidia.com/content/GTC-2010/pdfs/2238_GTC2010.pdf) that supports this idea (it's from 2010, but I think a lot of the ideas are still true). The key is that instruction-level parallelism (each thread has a lot of work to do) is an alternative (and sometimes more optimal) way to hide latency, instead of running more threads (higher occupancy). Our kernels have a lot of ILP. 
 
 

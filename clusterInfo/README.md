@@ -142,7 +142,17 @@ Then build with the usual
 ./waf build install
 ```
 
-to finish the installation of Gkyl. To access the Nvidia Volta node, ssh directly onto the node,
+to finish the installation of Gkyl.
+
+To access the Nvidia Volta node, it is preferable that you request a job through the SLURM system. For an interactive job with a V100 GPU node use something like
+
+```
+salloc --gres=gpu:V100:1 -t 01:00:00 -p centos7 --mem-per-cpu=4000
+```
+
+It may be necessary to specify the reservation through `--reservation`.
+
+If you cannot get the interactive job to work, you can ssh directly into the node (although this is not desirable/proper use) via
 
 ```
   ssh gpusrv02

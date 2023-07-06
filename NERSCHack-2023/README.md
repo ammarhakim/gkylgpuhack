@@ -6,6 +6,8 @@ The goal of participating in this GPU hackathon is to:
 2. Develop further GPU capabilities for the gyrokinetic solver in Gkeyll.
 3. Measure, understand and, if possible, enhance the performance scaling of the gyrokinetic solver in Gkeyll.
 
+A summary of the gyrokinetic model and some code capabilities can be found in `gkeyll_gyrokinetics_summary.pdf`.
+
 ## On the Gkeyll code
 
 The Gkeyll code consists 4 github repositories: gkylcas, gkylzero, gkyl and postgkyl. In this hackathon we

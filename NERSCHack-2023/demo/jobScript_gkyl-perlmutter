@@ -1,0 +1,52 @@
+#!/bin/bash -l
+
+#.Declare a name for this job, preferably with 16 or fewer characters.
+#SBATCH -J gkyl
+
+#.Request the queue (enter the possible names, if omitted, default is the default)
+#.this job is going to use the default
+#SBATCH -p regular
+
+#.Number of nodes to request (Perlmutter has 64 cores and 4 GPUs per node)
+#SBATCH -N 1
+
+#.Specify GPU needs:
+#SBATCH --constraint gpu
+#SBATCH --gpus 1
+
+#.Request wall time
+#SBATCH -t 00:30:00
+
+#SBATCH --account=ntrain4_g
+
+#.Mail is sent to you when the job starts and when it terminates or aborts.
+#SBATCH --mail-user=jdoe@msn.com
+#SBATCH --mail-type=END,FAIL,REQUEUE
+
+# Join error and output files in file with the following format
+### aSBATCH -i, --input=gdb_1-%j.out 
+
+module load PrgEnv-gnu/8.3.3
+module load cray-mpich/8.1.22
+module load cudatoolkit/11.7
+module load nccl/2.15.5-ofi
+module unload darshan
+
+# Specify the full path to gkyl command in jobscript.
+export gComDir="/global/homes/m/jdoe/gkylsoft/gkyl/bin"
+
+#.Create record-keeping directory (not purged).
+export recdir="$HOME/perlmutter/gkeyll/data/$SLURM_JOBID/"
+mkdir -p $recdir
+#.Copy files used for this run into record directory.
+cp ./ls2-lapd-3x2v-p1.lua $recdir
+cp ./jobScript_gkyl-perlmutter $recdir
+
+#.Run the gkyl executable.
+echo 'srun -n 1 --gpus 1 '$gComDir'/gkyl -g ls2-lapd-3x2v-p1.lua'
+srun -n 1 --gpus 1 $gComDir/gkyl -g ls2-lapd-3x2v-p1.lua
+
+cp ./ls2-lapd-3x2v-p1_0.log $recdir
+cp ./slurm-$SLURM_JOBID.out $recdir
+
+exit 0

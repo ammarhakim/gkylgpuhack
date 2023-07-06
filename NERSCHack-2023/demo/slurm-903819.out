@@ -1,0 +1,72 @@
+/home/manaurer/.bashrc: line 19: bind: warning: line editing not enabled
+/home/manaurer/.bashrc: line 20: bind: warning: line editing not enabled
+/home/manaurer/.bashrc: line 21: bind: warning: line editing not enabled
+/home/manaurer/.bashrc: line 22: bind: warning: line editing not enabled
+mpirun -n 1 /home/manaurer/gkeyll/code/g0g2/gkylsoft-amd/gkyl/bin//gkyl -g ls2-lapd-3x2v-p1.lua
+Reference parameters (SI units):
+  mi     = 6.6453e-27
+  me     = 1.6613e-29
+  Te0    = 9.6131e-19
+  Ti0    = 1.6022e-19
+  n0     = 2.0000e+18
+  B0     = 3.9800e-02
+  rho_s  = 1.2534e-02
+  V_bias = 0.0000e+00
+  r_bias = 2.6000e-01
+  r_s    = 2.5068e-01
+  L_s    = 6.2671e-03
+  S0     = 1.4394e+21
+  Lx     = 1.2534e+00
+  Ly     = 1.2534e+00
+  Lz     = 1.8049e+01
+
+  Max omega_H = kpar_max*vte/(kperp_min*rhos) = 2.665475e+07 rad/s
+
+Mon Jul 03 2023 01:36:13.000000000
+Gkyl built with fabb4803fabe
+Gkyl built on Jun 30 2023 14:57:32
+Initializing Gyrokinetic simulation ...
+...Initializing the geometry...
+...Finished initializing the geometry
+Initialization completed in 5.94313 sec
+
+Starting main loop of Gyrokinetic simulation ...
+
+ Step 0 at time 0. Time step 1.77425e-08. Completed 0%
+0123456789 Step  15999 at time  0.00030001837.  Time step  2.107114e-08.  Completed 10%
+0123456789 Step  29726 at time  0.00060001981.  Time step  2.366306e-08.  Completed 20%
+0123456789 Step  41706 at time  0.00090002303.  Time step  2.663768e-08.  Completed 30%
+0123456789 Step  52753 at time  0.0012000242.  Time step  2.798236e-08.  Completed 40%
+0123456789 Step  63434 at time  0.0015000124.  Time step  2.843047e-08.  Completed 50%
+0123456789 Step  74012 at time  0.0018000077.  Time step  2.837197e-08.  Completed 60%
+0123456789 Step  84574 at time  0.0021000018.  Time step  2.868494e-08.  Completed 70%
+0123456789 Step  95148 at time  0.0024000101.  Time step  2.848814e-08.  Completed 80%
+0123456789 Step 106418 at time  0.0027000186.  Time step  2.840225e-08.  Completed 90%
+0123456789 Step 117092 at time  0.0030000000.  Time step  2.824645e-08.  Completed 100%
+0
+
+Total number of time-steps 117093
+   Number of forward-Euler calls 351276
+   Number of RK stage-2 failures 0
+   Number of RK stage-3 failures 0
+Solver took                                31292.08313 s   ( 0.267241 s/step)   (62.631%)
+Solver BCs took                              464.52616 s   ( 0.003967 s/step)   ( 0.930%)
+Field solver took                            692.78876 s   ( 0.005917 s/step)   ( 1.387%)
+Field solver BCs                               0.00006 s   ( 0.000000 s/step)   ( 0.000%)
+Function field solver took                     0.00000 s   ( 0.000000 s/step)   ( 0.000%)
+Moment calculations took                    2178.77080 s   ( 0.018607 s/step)   ( 4.361%)
+Integrated moment calculations took           15.27462 s   ( 0.000130 s/step)   ( 0.031%)
+Field energy calculations took                15.19124 s   ( 0.000130 s/step)   ( 0.030%)
+Collision solver(s) took                    7866.96403 s   ( 0.067186 s/step)   (15.746%)
+Collision (other) took                       768.30646 s   ( 0.006562 s/step)   ( 1.538%)
+Source updaters took                         872.42976 s   ( 0.007451 s/step)   ( 1.746%)
+Stepper combine/copy took                    959.20357 s   ( 0.008192 s/step)   ( 1.920%)
+Forward Euler combine took                     0.00000 s   ( 0.000000 s/step)   ( 0.000%)
+Time spent in barrier function                 0.00000 s   ( 0.000000 s/step)   ( 0.000%)
+Data write took                               47.71680 s   ( 0.000408 s/step)   ( 0.096%)
+Write restart took                            25.97544 s   ( 0.000222 s/step)   ( 0.052%)
+[Unaccounted for]                           4837.35608 s   ( 0.041312 s/step)   ( 9.682%)
+
+Main loop completed in                     49962.89467 s   ( 0.426694 s/step)   (   100%)
+
+Mon Jul 03 2023 15:29:02.000000000
